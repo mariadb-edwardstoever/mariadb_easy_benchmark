@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS `LAST_RUN` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 insert into LAST_RUN values (0,'x',now());
 
-CREATE TABLE `MESSAGES` (
+CREATE TABLE IF NOT EXISTS `MESSAGES` (
   `msg_sent` datetime DEFAULT NULL,
   `msg_sender` varchar(16) DEFAULT NULL,
   `msg_recipient` varchar(16) DEFAULT NULL,
