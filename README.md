@@ -48,7 +48,7 @@ To benchmark instances in replication, you can run mariadb-slap on the master li
 mariadb-slap --delimiter=";" --create_schema="BENCHMARK"  --query="replication_benchmark.sql" --concurrency=50 --iterations=100
 ```
 
-The script replication_benchmark.sql will allow you to compare the performance of each instance compared to the others. For example, after benchmarking completes, I run the following query on a slave to see how far behind the master it got:
+The script replication_benchmark.sql provides a way to compare the performance of each instance to the performance of the others. For example, after benchmarking completes, I run the following query on a slave to see how far behind the master it got:
 ```
 MariaDB [BENCHMARK]> select * from REPLICATION_PROGRESS where id in(select max(id) from REPLICATION_PROGRESS union all select min(id) from REPLICATION_PROGRESS);
 +------+----------+---------------------+---------------------+------------------+----------------+
@@ -59,7 +59,7 @@ MariaDB [BENCHMARK]> select * from REPLICATION_PROGRESS where id in(select max(i
 +------+----------+---------------------+---------------------+------------------+----------------+
 2 rows in set (0.002 sec)
 ```
-We can see that the master was flooded with 30,898 changes based on gtid_slave_pos. We can also see that the slave fell behind the master by 17 seconds.
+We can see that the master was flooded with 30,898 changes based on gtid_slave_pos. We can also see that during the benchmark, the slave fell behind the master by 17 seconds.
 
 ## Providing Results to Mariadb Support
 
