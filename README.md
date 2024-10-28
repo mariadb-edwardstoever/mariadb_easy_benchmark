@@ -2,7 +2,7 @@
 
 Mariadb Easy Benchmark is a quick and easy method to use mariadb-slap to benchmark Mariadb instances.
 
-Benchmarking is the activity of flooding an instance with transactions to see how its performance compares to other instances. Mariadb-slap is a program that can do this. Mariadb-slap is limited in that it can run just one script which can only have one delimiter. Certain syntax that would be acceptable in the standard mariadb client will break mariadb-slap. If you need a more robust tool for benchmarking, you might try Mariadb Connection Pool Simulator, available here: https://github.com/mariadb-edwardstoever/conn_pool_sim
+Benchmarking is the activity of flooding an instance with connections and transactions to see how its performance compares to the performance of other instances. Mariadb-slap is a program that can do this. Mariadb-slap is limited in that it can run just one script which can only have one delimiter. Certain syntax that would be acceptable in the standard mariadb client will break when run on mariadb-slap. If you need a more flexible and robust tool for benchmarking, you might try Mariadb Connection Pool Simulator, available here: https://github.com/mariadb-edwardstoever/conn_pool_sim
 
 On the up-side, Mariadb-slap is easy to use if you have the right script to provide it. Also, mariadb-slap is distributed with Mariadb software.
 
@@ -27,7 +27,7 @@ git clone https://github.com/mariadb-edwardstoever/mariadb_easy_benchmark.git
 wget https://github.com/mariadb-edwardstoever/mariadb_easy_benchmark/archive/refs/heads/main.zip
 ```
 
-To setup the BENCHMARK schema, run the script:
+To setup the BENCHMARK schema, run the script setup_benchmark.sql. If yours is a replication group, run this on the master only:
 ```
 mariadb < setup_benchmark.sql
 ```
@@ -37,18 +37,26 @@ mariadb < setup_benchmark.sql
 To benchmark a stand-alone instance, you simply run a mariadb-slap command like this:
 
 ```
-mariadb-slap  --delimiter=";" --create_schema="BENCHMARK" --query="easy_benchmark.sql" --concurrency=50 --iterations=100
+mariadb-slap  --delimiter=";" \
+  --create_schema="BENCHMARK" \
+  --query="easy_benchmark.sql" \
+  --concurrency=50 \
+  --iterations=1000
 ```
 
-## Running on a Primary/Master in a replication group
+## Running on a Primary/Master of a replication group
 
 To benchmark instances in replication, you can run mariadb-slap on the master like this:
 
 ```
-mariadb-slap --delimiter=";" --create_schema="BENCHMARK"  --query="replication_benchmark.sql" --concurrency=50 --iterations=100
+mariadb-slap --delimiter=";" \
+  --create_schema="BENCHMARK"  \
+  --query="replication_benchmark.sql" \
+  --concurrency=50 \
+  --iterations=1000
 ```
 
-The script replication_benchmark.sql provides a way to compare the performance of each instance to the performance of the others. For example, after benchmarking completes, I run the following query on a slave to see how far behind the master it got:
+The script replication_benchmark.sql provides a way to compare the performance of each instance to the performance of the others. For example, after benchmarking completes, I run the following query on a slave to see how it compares to the master:
 ```
 MariaDB [BENCHMARK]> select * from REPLICATION_PROGRESS where id in(select max(id) from REPLICATION_PROGRESS union all select min(id) from REPLICATION_PROGRESS);
 +------+----------+---------------------+---------------------+------------------+----------------+
@@ -61,12 +69,15 @@ MariaDB [BENCHMARK]> select * from REPLICATION_PROGRESS where id in(select max(i
 ```
 We can see that the master was flooded with 30,898 changes based on gtid_slave_pos. We can also see that during the benchmark, the slave fell behind the master by 17 seconds.
 
+
 ## Providing Results to Mariadb Support
 
-If you need to share your results with Mariadb Support, dump the BENCHMARK schema on each instance in your replication group to a sql file like this:
+If you wish to share your results with Mariadb Support, dump the BENCHMARK schema on each instance in your replication group to a sql file like this:
 ```
 mariadb-dump BENCHMARK > $(hostname)_BENCHMARK.sql
 ```
+Then, share the files by attaching them to your support ticket.
+
 
 ## Clean up when done
 
@@ -74,3 +85,6 @@ You probably want to drop the BENCHMARK schema when you are finished, like so:
 ```
 mariadb < drop_benchmark_schema.sql
 ```
+
+---
+ref: 207741
