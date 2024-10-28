@@ -1,2 +1,5 @@
-# mariadb_easy_benchmark
-Use mariadb-slap to benchmark an instance
+# Mariadb Easy Benchmark
+
+A quick and easy method to use mariadb-slap to benchmark Mariadb instances.
+
+
